@@ -2,12 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Generador JPCFIX - Versión Final</title>
+    <title>Generador JPCFIX - Pro Original</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <style>
-        /* Ajustes base para que no haya sombras raras */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+
         .no-shadow { box-shadow: none !important; border: none !important; }
         
         .hoja-a4 { 
@@ -17,18 +21,17 @@
             position: relative; 
             margin: auto;
             overflow: hidden;
-            font-family: sans-serif;
         }
 
-        /* La franja gris como un DIV sólido, no como degradado */
         .franja-gris {
             position: absolute;
             top: 0;
             right: 0;
-            width: 60%;
+            width: 35%;
             height: 100%;
-            background-color: #f3f4f6;
+            background-color: #f8fafc;
             z-index: 0;
+            border-left: 1px solid #e2e8f0;
         }
 
         .contenido-presupuesto {
@@ -40,42 +43,52 @@
             flex-direction: column;
         }
 
+        /* Marca de agua en texto como estaba antes */
         .marca-agua { 
             position: absolute; 
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%) rotate(-45deg); 
-            font-size: 130px; 
-            color: rgba(0,0,0,0.03); 
-            font-weight: bold; 
+            font-size: 110px; 
+            color: rgba(0,0,0,0.02); 
+            font-weight: 900; 
             pointer-events: none; 
             z-index: 5; 
         }
 
+        tr:nth-child(even) { background-color: rgba(241, 245, 249, 0.5); }
+
         @media print { .no-print { display: none; } }
     </style>
 </head>
-<body class="bg-gray-100 py-10">
+<body class="bg-slate-100 py-10">
 
-    <div class="max-w-4xl mx-auto bg-white p-6 shadow-lg mb-10 no-print">
-        <h2 class="text-xl font-bold mb-4 border-b pb-2">Panel de Carga JPCFIX</h2>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <input type="text" id="in_nombre" placeholder="Nombre del Cliente" class="border p-2 rounded" oninput="actualizar()">
-            <input type="text" id="in_dir" placeholder="Dirección" class="border p-2 rounded" oninput="actualizar()">
-            <input type="date" id="in_fecha" class="border p-2 rounded" oninput="actualizar()">
-            <input type="text" id="in_validez" placeholder="Validez" class="border p-2 rounded" value="15 días" oninput="actualizar()">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-xl mb-10 no-print border border-slate-200">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 class="text-2xl font-black text-slate-800">Panel de Carga <span class="text-blue-600">JPCFIX</span></h2>
+            <span class="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-500 uppercase tracking-widest">Versión Pro</span>
         </div>
         
-        <div id="items-container" class="mb-4 space-y-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <input type="text" id="in_nombre" placeholder="Nombre completo" class="w-full border-slate-200 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" oninput="actualizar()">
+            <input type="text" id="in_dir" placeholder="Dirección del servicio" class="w-full border-slate-200 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" oninput="actualizar()">
+            <input type="date" id="in_fecha" class="w-full border-slate-200 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" oninput="actualizar()">
+            <input type="text" id="in_validez" class="w-full border-slate-200 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" value="15 días" oninput="actualizar()">
+        </div>
+        
+        <div id="items-container" class="space-y-3 mb-4">
             <div class="flex gap-2">
-                <input type="text" placeholder="Descripción" class="flex-1 border p-2 desc" oninput="actualizar()">
-                <input type="number" placeholder="Cant" class="w-20 border p-2 cant" oninput="actualizar()">
-                <input type="number" placeholder="Precio" class="w-32 border p-2 precio" oninput="actualizar()">
+                <input type="text" placeholder="Descripción" class="flex-1 border-slate-200 border p-3 rounded-lg desc" oninput="actualizar()">
+                <input type="number" placeholder="Cant" class="w-20 border-slate-200 border p-3 rounded-lg cant text-center" oninput="actualizar()">
+                <input type="number" placeholder="Precio" class="w-32 border-slate-200 border p-3 rounded-lg precio" oninput="actualizar()">
+                <button class="text-slate-300 hover:text-red-500 px-2" onclick="this.parentElement.remove(); actualizar()">✕</button>
             </div>
         </div>
         
-        <button onclick="agregarFila()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">+ Agregar Item</button>
-        <button onclick="generarPDF()" class="bg-green-600 text-white px-8 py-2 rounded font-bold float-right">GENERAR PDF</button>
+        <div class="flex justify-between items-center mt-8 pt-6 border-t">
+            <button onclick="agregarFila()" class="bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold">+ Agregar Item</button>
+            <button onclick="generarPDF()" class="bg-blue-600 text-white px-10 py-3 rounded-lg font-black shadow-lg shadow-blue-200 hover:-translate-y-1 transition-all">GENERAR PDF</button>
+        </div>
     </div>
 
     <div id="area-pdf" class="hoja-a4 no-shadow">
@@ -83,46 +96,55 @@
         <div class="marca-agua">JPCFIX</div>
         
         <div class="contenido-presupuesto">
-            <div class="flex justify-between items-start mb-10">
-                <div class="text-4xl font-black italic">JPCFIX</div>
-                <div class="bg-slate-800 text-white px-8 py-2 text-lg font-bold">PRESUPUESTO</div>
+            <div class="flex justify-between items-start mb-12">
+                <div>
+                    <div class="text-5xl font-black tracking-tighter text-slate-900">JPC<span class="text-blue-600">FIX</span></div>
+                    <p class="text-[10px] text-slate-500 font-bold tracking-[0.2em] mt-1 uppercase">Servicio Técnico & Soluciones</p>
+                </div>
+                <div class="bg-slate-900 text-white px-6 py-3 text-xl font-black tracking-widest">PRESUPUESTO</div>
             </div>
 
-            <div class="grid grid-cols-2 border-2 border-slate-800 bg-white/80 p-4 mb-8 relative z-20">
-                <div class="space-y-1">
-                    <p><strong>NOMBRE:</strong> <span id="out_nombre">......................</span></p>
-                    <p><strong>DIRECCIÓN:</strong> <span id="out_dir">......................</span></p>
+            <div class="grid grid-cols-2 border-l-4 border-slate-900 bg-white shadow-sm p-6 mb-10 relative z-20">
+                <div class="space-y-2">
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider">Cliente</p>
+                    <p class="text-sm"><strong>NOMBRE:</strong> <span id="out_nombre" class="text-slate-700 font-medium">......................</span></p>
+                    <p class="text-sm"><strong>DIRECCIÓN:</strong> <span id="out_dir" class="text-slate-700 font-medium">......................</span></p>
                 </div>
-                <div class="text-right space-y-1">
-                    <p><strong>FECHA:</strong> <span id="out_fecha">../../....</span></p>
-                    <p><strong>VALIDEZ:</strong> <span id="out_validez">15 días</span></p>
+                <div class="text-right space-y-2 border-l border-slate-100">
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider">Detalles</p>
+                    <p class="text-sm"><strong>FECHA:</strong> <span id="out_fecha" class="text-slate-700 font-medium">../../....</span></p>
+                    <p class="text-sm"><strong>VALIDEZ:</strong> <span id="out_validez" class="text-slate-700 font-medium">15 días</span></p>
                 </div>
             </div>
 
-            <table class="w-full border-collapse relative z-20">
+            <table class="w-full relative z-20">
                 <thead>
-                    <tr class="bg-slate-800 text-white">
-                        <th class="border border-slate-800 p-3 text-left">DESCRIPCIÓN</th>
-                        <th class="border border-slate-800 p-3 w-20 text-center">UNID.</th>
-                        <th class="border border-slate-800 p-3 w-28 text-center">PRECIO</th>
-                        <th class="border border-slate-800 p-3 w-28 text-center">TOTAL</th>
+                    <tr class="bg-slate-900 text-white text-[11px] tracking-widest uppercase">
+                        <th class="p-4 text-left rounded-tl-lg">Descripción</th>
+                        <th class="p-4 w-20 text-center">Cant.</th>
+                        <th class="p-4 w-32 text-center">Precio Unit.</th>
+                        <th class="p-4 w-32 text-center rounded-tr-lg">Subtotal</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-items" class="bg-white/50">
-                    </tbody>
+                <tbody id="tabla-items" class="text-sm text-slate-700">
+                </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3" class="text-right p-3 font-bold">TOTAL:</td>
-                        <td id="total_final" class="border-2 border-slate-800 p-3 font-bold text-center bg-white text-lg">$ 0</td>
+                        <td colspan="2"></td>
+                        <td class="text-right p-6 font-bold text-slate-500 uppercase tracking-widest text-xs">Total Final:</td>
+                        <td id="total_final" class="p-6 font-black text-center text-2xl text-slate-900 bg-slate-50 border-b-4 border-blue-600">$ 0</td>
                     </tr>
                 </tfoot>
             </table>
 
-            <div class="mt-auto flex justify-between items-end pb-10">
-                <p class="text-xs italic">Forma de pago: EFECTIVO - TRANSFERENCIA</p>
+            <div class="mt-auto flex justify-between items-end pb-8 border-t border-slate-100 pt-8">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Métodos de Pago</p>
+                    <p class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded uppercase">Efectivo - Transferencia</p>
+                </div>
                 <div class="text-center">
-                    <div class="border-b border-slate-800 w-40 mb-1"></div>
-                    <p class="text-xs font-bold uppercase">Firma</p>
+                    <div class="border-b-2 border-slate-900 w-48 mb-2"></div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900">Firma</p>
                 </div>
             </div>
         </div>
@@ -131,17 +153,20 @@
     <script>
         function agregarFila() {
             const div = document.createElement('div');
-            div.className = "flex gap-2";
-            div.innerHTML = `<input type="text" placeholder="Descripción" class="flex-1 border p-2 desc" oninput="actualizar()">
-                             <input type="number" placeholder="Cant" class="w-20 border p-2 cant" oninput="actualizar()">
-                             <input type="number" placeholder="Precio" class="w-32 border p-2 precio" oninput="actualizar()">`;
+            div.className = "flex gap-2 animate-in fade-in duration-300";
+            div.innerHTML = `
+                <input type="text" placeholder="Descripción" class="flex-1 border-slate-200 border p-3 rounded-lg desc" oninput="actualizar()">
+                <input type="number" placeholder="0" class="w-20 border-slate-200 border p-3 rounded-lg cant text-center" oninput="actualizar()">
+                <input type="number" placeholder="0.00" class="w-32 border-slate-200 border p-3 rounded-lg precio" oninput="actualizar()">
+                <button class="text-slate-300 hover:text-red-500 px-2" onclick="this.parentElement.remove(); actualizar()">✕</button>`;
             document.getElementById('items-container').appendChild(div);
         }
 
         function actualizar() {
             document.getElementById('out_nombre').innerText = document.getElementById('in_nombre').value || '................';
             document.getElementById('out_dir').innerText = document.getElementById('in_dir').value || '................';
-            document.getElementById('out_fecha').innerText = document.getElementById('in_fecha').value || '../../....';
+            const fechaVal = document.getElementById('in_fecha').value;
+            document.getElementById('out_fecha').innerText = fechaVal ? fechaVal.split('-').reverse().join('/') : '../../....';
             document.getElementById('out_validez').innerText = document.getElementById('in_validez').value || '15 días';
 
             let totalGral = 0;
@@ -154,26 +179,31 @@
                 const c = parseFloat(f.querySelector('.cant').value) || 0;
                 const p = parseFloat(f.querySelector('.precio').value) || 0;
                 const t = c * p;
+                
                 if(d || c > 0) {
                     totalGral += t;
-                    tabla.innerHTML += `<tr>
-                        <td class="border border-slate-800 p-2 bg-white/80 font-medium">${d}</td>
-                        <td class="border border-slate-800 p-2 text-center bg-white/80">${c}</td>
-                        <td class="border border-slate-800 p-2 text-center bg-white/80">$ ${p.toLocaleString()}</td>
-                        <td class="border border-slate-800 p-2 text-center bg-white/80 font-bold">$ ${t.toLocaleString()}</td>
-                    </tr>`;
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-100";
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium text-slate-800">${d}</td>
+                        <td class="p-4 text-center text-slate-500">${c}</td>
+                        <td class="p-4 text-center text-slate-500">$ ${p.toLocaleString('es-AR')}</td>
+                        <td class="p-4 text-center font-bold text-slate-900">$ ${t.toLocaleString('es-AR')}</td>
+                    `;
+                    tabla.appendChild(tr);
                 }
             });
-            document.getElementById('total_final').innerText = '$ ' + totalGral.toLocaleString();
+            document.getElementById('total_final').innerText = '$ ' + totalGral.toLocaleString('es-AR');
         }
 
         function generarPDF() {
             const element = document.getElementById('area-pdf');
+            const nombreArchivo = document.getElementById('in_nombre').value || 'Presupuesto';
             const opt = {
                 margin: 0,
-                filename: 'Presupuesto_JPCFIX.pdf',
+                filename: `JPCFIX_${nombreArchivo}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3, useCORS: true, logging: false, letterRendering: true },
+                html2canvas: { scale: 3, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
