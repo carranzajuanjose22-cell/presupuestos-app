@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>JPCFIX - Generador Premium</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -18,14 +17,16 @@
         body { font-family: 'Inter', sans-serif; }
         h1, h2, .font-display { font-family: 'Archivo', sans-serif; }
 
-        /* AJUSTE TÉCNICO: Se eliminó overflow para evitar problemas en el renderizado */
         .hoja-a4 { 
             width: 210mm; 
-            height: 296.5mm; /* Un mm menos para evitar el salto de página */
+            min-height: 297mm;
             background-color: white; 
             position: relative; 
             margin: auto;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
         }
 
         .bg-pattern {
@@ -40,13 +41,59 @@
             z-index: 0;
         }
 
+        .contenido-presupuesto.pagina-unica {
+            min-height: 297mm;
+        }
+
+        .contenido-presupuesto.pagina-multiple {
+            min-height: auto;
+        }
+
         .contenido-presupuesto {
             position: relative;
             z-index: 10;
             padding: 20mm;
-            height: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .contenido-presupuesto.pagina-multiple .pdf-body {
+            flex: none;
+        }
+
+        .pdf-body {
+            flex: 1 1 auto;
+        }
+
+        .pdf-footer-wrap {
+            flex-shrink: 0;
+            margin-top: auto;
+            padding-top: 14mm;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pdf-total-section {
+            padding-top: 0;
+            margin-bottom: 4mm;
+        }
+
+        .pdf-signature-section {
+            min-height: 40mm;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding-top: 5mm;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .pdf-signature-line {
+            min-height: 28mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
         }
 
         .marca-agua { 
@@ -63,9 +110,120 @@
         }
 
         @media print {
-            .no-print { display: none !important; }
-            body { background: white; padding: 0; margin: 0; }
-            .hoja-a4 { box-shadow: none; margin: 0; }
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            html, body {
+                width: 210mm;
+                height: auto !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #area-pdf,
+            #area-pdf * {
+                visibility: visible;
+            }
+
+            #area-pdf {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                min-height: 297mm;
+                height: auto !important;
+                max-height: none !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+            }
+
+            .contenido-presupuesto {
+                height: auto !important;
+                padding: 12mm 14mm 10mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            .contenido-presupuesto.pagina-unica {
+                min-height: 297mm !important;
+            }
+
+            .contenido-presupuesto.pagina-multiple {
+                min-height: auto !important;
+            }
+
+            .pdf-footer-wrap {
+                flex-shrink: 0 !important;
+                padding-top: 14mm !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .contenido-presupuesto.pagina-unica .pdf-footer-wrap {
+                margin-top: auto !important;
+            }
+
+            .contenido-presupuesto.pagina-multiple .pdf-footer-wrap {
+                margin-top: 0 !important;
+            }
+
+            .pdf-signature-section {
+                min-height: 40mm !important;
+                padding-top: 5mm !important;
+            }
+
+            .pdf-signature-line {
+                min-height: 26mm !important;
+            }
+
+            .pdf-total-section {
+                margin-bottom: 4mm !important;
+                padding-top: 0 !important;
+            }
+
+            #area-pdf .mb-16 { margin-bottom: 0.85rem !important; }
+            #area-pdf .mt-6 { margin-top: 0.5rem !important; }
+            #area-pdf .py-8 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
+            #area-pdf .space-y-4 > * + * { margin-top: 0.35rem !important; }
+            #area-pdf .pt-12 { padding-top: 0.65rem !important; }
+            #area-pdf .mt-8 { margin-top: 0 !important; }
+            #area-pdf .pt-8 { padding-top: 0.45rem !important; }
+            #area-pdf .pb-4 { padding-bottom: 0 !important; }
+            #area-pdf .pb-6,
+            #area-pdf th.pb-6 { padding-bottom: 0.35rem !important; }
+            #area-pdf td.py-6,
+            #area-pdf th.pb-6 { padding-top: 0.35rem !important; }
+            #area-pdf .text-7xl { font-size: 2.85rem !important; line-height: 0.85 !important; }
+            #area-pdf .text-5xl { font-size: 2rem !important; }
+            #area-pdf .text-xl { font-size: 0.95rem !important; }
+            #area-pdf .p-8 { padding: 0.85rem 1rem !important; }
+            #area-pdf .min-w-\[300px\] { min-width: 220px !important; }
+            #area-pdf .mb-4 { margin-bottom: 0.35rem !important; }
+            #area-pdf .mb-2 { margin-bottom: 0.15rem !important; }
+            #area-pdf .w-48 { width: 7rem !important; }
+            #area-pdf .pdf-footer:last-child,
+            #area-pdf .pdf-signature-section {
+                margin-top: 0 !important;
+            }
+            #area-pdf .shadow-2xl { box-shadow: none !important; }
+
+            #area-pdf tr.item-row {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
         }
 
         .input-premium {
@@ -129,6 +287,7 @@
         <div class="marca-agua font-display">JPCFIX</div>
         
         <div class="contenido-presupuesto">
+            <div id="pdf-body" class="pdf-body">
             <div class="flex justify-between items-end mb-16 relative z-10">
                 <div>
                     <h1 class="text-7xl font-black tracking-tighter text-slate-900 leading-[0.8]"><span class="text-blue-600">J</span>P<span class="text-blue-600">C</span>FIX</h1>
@@ -181,10 +340,12 @@
                     <tbody id="tabla-items" class="text-sm text-slate-700"></tbody>
                 </table>
             </div>
+            </div>
 
-            <div class="mt-12 relative z-10">
+            <div id="pdf-footer-wrap" class="pdf-footer-wrap">
+            <div class="pdf-total-section relative z-10">
                 <div class="flex justify-between items-end">
-                    <div class="pb-4">
+                    <div class="pb-2">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="w-2 h-2 rounded-full bg-green-500"></div>
                             <p class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Aprobación Inmediata</p>
@@ -202,14 +363,15 @@
                 </div>
             </div>
 
-            <div class="mt-16 flex justify-between items-center relative z-10 pt-8 border-t border-slate-100">
+            <div class="pdf-signature-section relative z-10">
                 <div>
                     <p class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 uppercase">Original</p>
                 </div>
-                <div class="text-center">
+                <div class="pdf-signature-line text-center">
                     <div class="w-48 h-px bg-slate-200 mb-4 mx-auto"></div>
                     <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-900">Firma Autorizada JPCFIX</p>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -246,7 +408,7 @@
                 if(d || c > 0) {
                     totalGral += t;
                     const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-50";
+                    tr.className = "border-b border-slate-50 item-row";
                     tr.innerHTML = `<td class="py-6 font-bold text-slate-800 text-base">${d}</td>
                                     <td class="py-6 text-center text-slate-500 font-bold">${c}</td>
                                     <td class="py-6 text-right text-slate-500 font-medium">$ ${p.toLocaleString('es-AR')}</td>
@@ -255,21 +417,70 @@
                 }
             });
             document.getElementById('total_final').innerText = '$ ' + totalGral.toLocaleString('es-AR');
+            ajustarPie();
+        }
+
+        function ajustarPie() {
+            const area = document.getElementById('area-pdf');
+            const body = document.getElementById('pdf-body');
+            const footerWrap = document.getElementById('pdf-footer-wrap');
+            const contenido = area.querySelector('.contenido-presupuesto');
+
+            footerWrap.style.minHeight = '';
+            footerWrap.style.display = '';
+            footerWrap.style.flexDirection = '';
+            footerWrap.style.justifyContent = '';
+            footerWrap.style.marginTop = '';
+
+            const pageHeightPx = area.offsetWidth * (297 / 210);
+            const padTop = parseFloat(getComputedStyle(contenido).paddingTop) || 0;
+            const padBottom = parseFloat(getComputedStyle(contenido).paddingBottom) || 0;
+            const bodyHeight = body.offsetHeight;
+            const endOfBody = padTop + bodyHeight;
+            const multiPage = endOfBody > pageHeightPx - padBottom;
+
+            contenido.classList.toggle('pagina-unica', !multiPage);
+            contenido.classList.toggle('pagina-multiple', multiPage);
+
+            if (!multiPage) {
+                contenido.style.minHeight = pageHeightPx + 'px';
+                footerWrap.style.marginTop = 'auto';
+                return;
+            }
+
+            contenido.style.minHeight = '';
+
+            const pageRemainder = endOfBody % pageHeightPx;
+            const spaceOnLastPage = pageRemainder === 0
+                ? pageHeightPx
+                : pageHeightPx - pageRemainder;
+
+            footerWrap.style.minHeight = spaceOnLastPage + 'px';
+            footerWrap.style.display = 'flex';
+            footerWrap.style.flexDirection = 'column';
+            footerWrap.style.justifyContent = 'flex-end';
         }
 
         function generarPDF() {
-            const element = document.getElementById('area-pdf');
-            const nombreArchivo = document.getElementById('in_nombre').value || 'Presupuesto';
-            const opt = {
-                margin: 0,
-                filename: `JPCFIX_${nombreArchivo}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                /* AJUSTE DE ESCALA: auto-paging en false evita la hoja en blanco */
-                html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
-            };
-            html2pdf().set(opt).from(element).save();
+            ajustarPie();
+            document.getElementById('area-pdf').scrollIntoView({ block: 'start' });
+            setTimeout(() => window.print(), 200);
         }
+
+        window.addEventListener('afterprint', () => {
+            const footerWrap = document.getElementById('pdf-footer-wrap');
+            const contenido = document.querySelector('.contenido-presupuesto');
+            footerWrap.style.minHeight = '';
+            footerWrap.style.display = '';
+            footerWrap.style.flexDirection = '';
+            footerWrap.style.justifyContent = '';
+            footerWrap.style.marginTop = '';
+            if (contenido) contenido.style.minHeight = '';
+            ajustarPie();
+        });
+
+        window.addEventListener('resize', ajustarPie);
+        window.addEventListener('load', ajustarPie);
     </script>
 </body>
 </html>
