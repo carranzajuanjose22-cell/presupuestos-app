@@ -12,6 +12,9 @@
         :root {
             --brand-blue: #2563eb;
             --brand-dark: #0f172a;
+            --pdf-mt: 12mm;
+            --pdf-mb: 10mm;
+            --pdf-mx: 14mm;
         }
 
         body { font-family: 'Inter', sans-serif; }
@@ -52,7 +55,7 @@
         .contenido-presupuesto {
             position: relative;
             z-index: 10;
-            padding: 20mm;
+            padding: var(--pdf-mt) var(--pdf-mx) var(--pdf-mb);
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -112,11 +115,11 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 0;
+                margin: var(--pdf-mt) var(--pdf-mx) var(--pdf-mb);
             }
 
             html, body {
-                width: 210mm;
+                width: auto;
                 height: auto !important;
                 background: white !important;
                 padding: 0 !important;
@@ -138,11 +141,11 @@
             }
 
             #area-pdf {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 210mm;
-                min-height: 297mm;
+                position: static !important;
+                left: auto !important;
+                top: auto !important;
+                width: auto !important;
+                min-height: 0 !important;
                 height: auto !important;
                 max-height: none !important;
                 margin: 0 !important;
@@ -152,7 +155,7 @@
 
             .contenido-presupuesto {
                 height: auto !important;
-                padding: 12mm 14mm 10mm !important;
+                padding: 0 !important;
                 display: flex !important;
                 flex-direction: column !important;
             }
@@ -223,6 +226,15 @@
             #area-pdf tr.item-row {
                 break-inside: avoid;
                 page-break-inside: avoid;
+            }
+
+            #area-pdf thead {
+                display: table-header-group;
+            }
+
+            #area-pdf table {
+                break-inside: auto;
+                page-break-inside: auto;
             }
         }
 
@@ -420,42 +432,58 @@
             ajustarPie();
         }
 
+        function medidasPagina() {
+            const area = document.getElementById('area-pdf');
+            const contenido = area.querySelector('.contenido-presupuesto');
+            const mmToPx = area.offsetWidth / 210;
+            const padTop = parseFloat(getComputedStyle(contenido).paddingTop) || 0;
+            const padBottom = parseFloat(getComputedStyle(contenido).paddingBottom) || 0;
+            const printableHeightPx = (297 - 12 - 10) * mmToPx;
+
+            return { mmToPx, padTop, padBottom, printableHeightPx };
+        }
+
+        function resetPieEstilos(footerWrap, contenido) {
+            footerWrap.style.minHeight = '';
+            footerWrap.style.display = '';
+            footerWrap.style.flexDirection = '';
+            footerWrap.style.justifyContent = '';
+            footerWrap.style.marginTop = '';
+            if (contenido) contenido.style.minHeight = '';
+        }
+
         function ajustarPie() {
             const area = document.getElementById('area-pdf');
             const body = document.getElementById('pdf-body');
             const footerWrap = document.getElementById('pdf-footer-wrap');
             const contenido = area.querySelector('.contenido-presupuesto');
 
-            footerWrap.style.minHeight = '';
-            footerWrap.style.display = '';
-            footerWrap.style.flexDirection = '';
-            footerWrap.style.justifyContent = '';
-            footerWrap.style.marginTop = '';
+            resetPieEstilos(footerWrap, contenido);
 
-            const pageHeightPx = area.offsetWidth * (297 / 210);
-            const padTop = parseFloat(getComputedStyle(contenido).paddingTop) || 0;
-            const padBottom = parseFloat(getComputedStyle(contenido).paddingBottom) || 0;
+            const { padTop, padBottom, printableHeightPx, mmToPx } = medidasPagina();
             const bodyHeight = body.offsetHeight;
-            const endOfBody = padTop + bodyHeight;
-            const multiPage = endOfBody > pageHeightPx - padBottom;
+            const multiPage = bodyHeight > printableHeightPx;
 
             contenido.classList.toggle('pagina-unica', !multiPage);
             contenido.classList.toggle('pagina-multiple', multiPage);
 
             if (!multiPage) {
-                contenido.style.minHeight = pageHeightPx + 'px';
+                contenido.style.minHeight = (printableHeightPx + padTop + padBottom) + 'px';
                 footerWrap.style.marginTop = 'auto';
                 return;
             }
 
-            contenido.style.minHeight = '';
+            const remainder = bodyHeight % printableHeightPx;
+            let spaceOnLastPage = remainder === 0
+                ? printableHeightPx
+                : printableHeightPx - remainder;
 
-            const pageRemainder = endOfBody % pageHeightPx;
-            const spaceOnLastPage = pageRemainder === 0
-                ? pageHeightPx
-                : pageHeightPx - pageRemainder;
+            const thead = document.querySelector('#area-pdf thead');
+            if (remainder !== 0 && thead) {
+                spaceOnLastPage = Math.max(0, spaceOnLastPage - thead.offsetHeight);
+            }
 
-            footerWrap.style.minHeight = spaceOnLastPage + 'px';
+            footerWrap.style.minHeight = (spaceOnLastPage / mmToPx) + 'mm';
             footerWrap.style.display = 'flex';
             footerWrap.style.flexDirection = 'column';
             footerWrap.style.justifyContent = 'flex-end';
@@ -464,18 +492,18 @@
         function generarPDF() {
             ajustarPie();
             document.getElementById('area-pdf').scrollIntoView({ block: 'start' });
-            setTimeout(() => window.print(), 200);
+            setTimeout(() => {
+                ajustarPie();
+                window.print();
+            }, 250);
         }
+
+        window.addEventListener('beforeprint', ajustarPie);
 
         window.addEventListener('afterprint', () => {
             const footerWrap = document.getElementById('pdf-footer-wrap');
             const contenido = document.querySelector('.contenido-presupuesto');
-            footerWrap.style.minHeight = '';
-            footerWrap.style.display = '';
-            footerWrap.style.flexDirection = '';
-            footerWrap.style.justifyContent = '';
-            footerWrap.style.marginTop = '';
-            if (contenido) contenido.style.minHeight = '';
+            resetPieEstilos(footerWrap, contenido);
             ajustarPie();
         });
 
